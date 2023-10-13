@@ -1,0 +1,207 @@
+#include<bits/stdc++.h>
+using namespace std;
+class TextCompression
+{
+	public:
+		
+	   // creating the structure HuffmanNode 
+	   
+	    struct HuffmanNode
+	    {
+	        char data;
+	        int freq;
+	        HuffmanNode* LeftNode;
+	        HuffmanNode* RightNode;
+	    };
+	    
+	   // typedef (keyword used to assign alternative names to the existing datatypes)
+	   
+	    typedef HuffmanNode* Huffman;
+	    
+	   // function to get Huffman code for each charecter
+	   
+	    void Huffman_encode(Huffman root,unordered_map<char,string> &mp1,string store=""){
+	        
+	        if(root->LeftNode==NULL && root->RightNode==NULL){
+	            mp1[root->data]=store;
+	            return ;
+	        }
+	        
+	        // traversing LeftNode then we Add '0' to the string
+	        Huffman_encode(root->LeftNode,mp1,store+'0');
+	        
+	        // traversing RightNode then we Add '1' to the string
+	        Huffman_encode(root->RightNode,mp1,store+'1');
+	        
+	    }
+	    
+	    string Huffman_decode(Huffman root,string s){
+	    	
+			string ans="";
+	    	int n=s.size();
+	    	Huffman temp=root;
+	    	for(int i=0;i<n;i++){
+	    		
+	    		if(s[i]==' ') ans+=' ';
+	    		
+	    		else{
+	    		    
+	    			if(s[i]=='0'){
+	    				temp=temp->LeftNode;
+					}
+					else{
+					    temp=temp->RightNode;
+					}
+					
+					// checking for leaf Node
+					if(temp->LeftNode==NULL && temp->RightNode==NULL ){
+					    ans+=temp->data;
+					    temp=root;
+					}
+				}
+			}
+	        
+	        return ans;
+		}
+	    
+	    // function to create HuffmanNode.
+	    
+	    Huffman make_node(char data,int freq)
+	    {
+	        Huffman Temp=new HuffmanNode;
+	        Temp->data=data;
+	        Temp->freq=freq;
+	        Temp->LeftNode=NULL;
+	        Temp->RightNode=NULL;
+	        return Temp;
+	    }
+	    
+	    /*
+	    compartor for MIN HEAP 
+	     As we want heap should be sorted based on the frequency of charecter occured 
+	    */
+	    
+	    struct cmp
+	    {
+	        bool operator()(Huffman Node1, Huffman Node2)
+	        {
+	            if(Node1->freq > Node2->freq){
+	                return true;
+	            }
+	            else{
+	                return false;
+	            }
+	        }
+	    };
+	    
+	    // function to print the huffmanCodes for each charecter
+	    
+	    void PrintCodes(unordered_map<char,string> Temp){
+	        cout<<"\nThe Encoded charecters in the string are \n"<<endl;
+	        for(auto it:Temp){
+	            cout<<"The Huffman Code for "<<it.first<<" is "<<it.second<<endl;
+	        }
+	    }
+	    
+	    // function to encode the given string
+	    
+	    string Encode_string(string s,unordered_map<char,string> HuffmanMap){
+	        
+	        string encode;
+	        
+	        for(auto it:s){
+	            if(it==' ') encode+=' ';
+	            else encode+=HuffmanMap[it];
+	        }
+	        
+	        return encode;
+	    }
+	    // function to create the Huffman Tree
+	    
+		void huffmanCodes(string s,unordered_map<char,int> data)
+		{
+		    // using priority_queue to get the minimum frequency charecters
+		    
+            priority_queue<Huffman,vector<Huffman>,cmp> HuffmanQueue;
+            
+            // inserting the charecter and frequency into priority_queue
+            
+            for(auto it:data)
+            HuffmanQueue.push(make_node(it.first,it.second));
+            
+            // creating Huffman Tree
+            
+            while(HuffmanQueue.size()!=1)   
+            {
+                Huffman left,right,combined;
+                
+                left=HuffmanQueue.top(); 
+                HuffmanQueue.pop();
+                
+                right=HuffmanQueue.top();
+                HuffmanQueue.pop();
+                
+                combined=make_node('$',left->freq+right->freq);
+                
+                combined->LeftNode=left;
+                combined->RightNode=right;
+                
+                // inserting the combined node into priority_queue
+                
+                HuffmanQueue.push(combined);
+            }
+            // when all the nodes are combined the final node will be the root of Huffman Tree
+            
+            Huffman root=HuffmanQueue.top();
+            
+            //using unordered_map to store the huffmanCode of each charecter
+            
+            unordered_map<char,string> ans;
+            Huffman_encode(root,ans);
+            
+            // printing the huffmanCodes for each charecter
+            
+            PrintCodes(ans);
+            
+            cout<<"\nThe original String is --> "<<s<<endl;
+            
+            // encoding the given string
+            
+            string encode=Encode_string(s,ans);
+            
+            cout<<"\nThe Encoded String is --> "<<encode<<endl;
+            
+            // DECODING THE STRING
+            string decoded=Huffman_decode(root,encode);
+            
+            cout<<"\nThe Decoded string is --> "<<decoded<<endl;
+		}
+};   
+int main(){
+    
+	string S;
+	cout<<"Enter the string to be encoded \n"<<endl;
+	getline(cin,S); 
+	    
+	/* 
+	using unordered_map to store the frequency of each charecter 
+	occured in the string and neglecting spaces.
+	*/
+	    
+	unordered_map<char,int> HuffmanQueue; 
+	
+	for(auto it: S){ 
+	   if(it!=' ')   HuffmanQueue[it]++;
+	}
+	    
+	cout<<"\nThe frequency of each charecter in the string are \n"<<endl;
+	
+	for(auto it: HuffmanQueue){
+        cout<<"The frequency of "<<it.first<<" is "<<it.second<<endl;
+	}
+	    
+	TextCompression encode;
+	encode.huffmanCodes(S,HuffmanQueue); 
+	    
+	return 0;
+}
